@@ -1,164 +1,115 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import logo from "../../assets/images/logo.jpg";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faUser, faChalkboardUser } from "@fortawesome/free-solid-svg-icons";
+import { faUser, faChalkboardUser, faSignOutAlt } from "@fortawesome/free-solid-svg-icons";
 import { authService } from "../../api/auth.service";
+import { useUserContext } from "../../contexts/UserContext";
 
-function Navbar(props) {
-  const value = props.page;
+function Navbar({ page }) {
   const navigate = useNavigate();
-  const [isAuthenticated, setIsAuthenticated] = useState(authService.isUserAuthenticated());
+  
+  // Context থেকে user, setUser এবং loading নিন
+  const { user, setUser, loading } = useUserContext(); 
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
+  // ইউজার বা এডমিন যেই হোক, লগইন থাকলে user অবজেক্ট থাকবে
+  const isAuthenticated = !!user;
+
   const handleLogOut = async () => {
-    await authService.logout();
+    await authService.logout(); // LocalStorage ক্লিয়ার করবে
+    setUser(null); // Context ক্লিয়ার করবে, যাতে সাথে সাথে 'Login' বাটন ফিরে আসে
     navigate("/login");
   };
 
-  const toggleMobileMenu = () => {
-    setIsMobileMenuOpen(!isMobileMenuOpen);
+  const toggleMobileMenu = () => setIsMobileMenuOpen(!isMobileMenuOpen);
+  const closeMobileMenu = () => setIsMobileMenuOpen(false);
+
+  // অ্যাক্টিভ পেজের স্টাইল নির্ধারণের ফাংশন
+  const getLinkClasses = (linkName) => {
+    const base = "no-underline text-[17px] font-bold transition-all duration-300 px-[12px] py-[4px] block rounded";
+    const active = "bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-md";
+    const inactive = "text-[rgb(21,21,100)] hover:text-yellow-500";
+    return `${base} ${page === linkName ? active : inactive}`;
   };
 
-  const closeMobileMenu = () => {
-    setIsMobileMenuOpen(false);
-  };
+  // Loading state দেখান যদি context এখনো data load করছে
+  if (loading) {
+    return (
+      <nav className="bg-white w-full flex flex-row justify-between items-center px-[4vw] py-2 shadow-md z-[999] sticky top-0">
+        <div className="flex items-center">
+          <Link to="/">
+            <img src={logo} alt="LMS Logo" className="w-[200px] h-auto cursor-pointer" />
+          </Link>
+        </div>
+        <div className="animate-pulse">Loading...</div>
+      </nav>
+    );
+  }
 
   return (
-    <div>
-      <nav className="bg-white w-full flex flex-row justify-between items-center px-[4vw] shadow-[2px_2px_10px_rgba(0,0,0,0.15)] z-[999]">
-        <div className="flex items-center justify-center">
-          <img src={logo} alt="" className="w-[300px] h-[65px] cursor-pointer" />
+    <nav className="bg-white w-full flex flex-row justify-between items-center px-[4vw] py-2 shadow-md z-[999] sticky top-0">
+      {/* ক্লিকেবল লোগো */}
+      <div className="flex items-center">
+        <Link to="/" onClick={closeMobileMenu}>
+          <img src={logo} alt="LMS Logo" className="w-[200px] h-auto cursor-pointer" />
+        </Link>
+      </div>
+
+      <div className="flex items-center">
+        {/* মোবাইল মেনু টগল বাটন */}
+        <div className="md:hidden text-2xl cursor-pointer mr-4" onClick={toggleMobileMenu}>
+          &#9776;
         </div>
-        <div className="flex">
-          <div id="menu-btn" className="hidden">
-            <div className="menu-dash" onClick={toggleMobileMenu}>
-              &#9776;
-            </div>
-          </div>
-          <i
-            id="menu-close"
-            className="fas fa-times hidden"
-            onClick={closeMobileMenu}
-          ></i>
-          <ul className={`flex justify-end items-center ${isMobileMenuOpen ? "active" : ""}`}>
-            {isMobileMenuOpen && (
-              <li className="close-button">
-                <button onClick={closeMobileMenu}>X</button>
-              </li>
-            )}
-            {value === "home" ? (
-              <li className="list-none ml-5 rounded-[5px] bg-gradient-to-r from-blue-600 to-purple-600">
-                <Link 
-                  to={"/"} 
-                  className="no-underline text-white text-[17px] font-bold transition-all duration-300 ease-in-out px-[10px] py-[2px] block hover:text-yellow-400"
-                >
-                  Home
+
+        <ul className={`flex items-center gap-4 list-none m-0 p-0 ${isMobileMenuOpen ? "absolute top-[70px] left-0 w-full bg-white flex-col p-5 shadow-xl" : "hidden md:flex"}`}>
+          
+          <li><Link to="/" className={getLinkClasses("home")} onClick={closeMobileMenu}>Home</Link></li>
+          <li><Link to="/courses" className={getLinkClasses("courses")} onClick={closeMobileMenu}>Courses</Link></li>
+
+          {/* লগইন করা থাকলে এই লিঙ্কগুলো দেখাবে */}
+          {isAuthenticated && (
+            <>
+              <li>
+                <Link to="/profile" className={getLinkClasses("profile")} onClick={closeMobileMenu}>
+                  Profile <FontAwesomeIcon icon={faUser} className="ml-1 text-sm" />
                 </Link>
               </li>
-            ) : (
-              <li className="list-none ml-5">
-                <Link 
-                  to={"/"}
-                  className="no-underline text-[rgb(21,21,100)] text-[17px] font-bold transition-all duration-300 ease-in-out hover:text-yellow-400"
-                >
-                  Home
+              <li>
+                <Link to="/learnings" className={getLinkClasses("learnings")} onClick={closeMobileMenu}>
+                  Learnings <FontAwesomeIcon icon={faChalkboardUser} className="ml-1 text-sm" />
                 </Link>
               </li>
-            )}
-            {value === "courses" ? (
-              <li className="list-none ml-5 rounded-[5px] bg-gradient-to-r from-blue-600 to-purple-600">
-                <Link
-                  to={"/courses"}
-                  className="no-underline text-white text-[17px] font-bold transition-all duration-300 ease-in-out px-[10px] py-[2px] block hover:text-yellow-400"
-                >
-                  Courses
-                </Link>
-              </li>
-            ) : (
-              <li className="list-none ml-5">
-                <Link 
-                  to={"/courses"}
-                  className="no-underline text-[rgb(21,21,100)] text-[17px] font-bold transition-all duration-300 ease-in-out hover:text-yellow-400"
-                >
-                  Courses
-                </Link>
-              </li>
-            )}
-            {isAuthenticated  ? (
-              value === "profile" ? (
-                <li className="list-none ml-5 rounded-[5px] bg-gradient-to-r from-blue-600 to-purple-600">
-                  <Link
-                    to={"/profile"}
-                    className="no-underline text-white text-[17px] font-bold transition-all duration-300 ease-in-out px-[10px] py-[2px] block hover:text-yellow-400"
-                  >
-                    Profile
-                    <FontAwesomeIcon icon={faUser} className="ml-1" />
-                  </Link>
-                </li>
-              ) : (
-                <li className="list-none ml-5">
-                  <Link 
-                    to={"/profile"}
-                    className="no-underline text-[rgb(21,21,100)] text-[17px] font-bold transition-all duration-300 ease-in-out hover:text-yellow-400"
-                  >
-                    Profile
-                    <FontAwesomeIcon icon={faUser} className="ml-1" />
-                  </Link>
-                </li>
-              )
-            ) : (
-              <></>
-            )}
+            </>
+          )}
+
+          <li className="ml-2">
             {isAuthenticated ? (
-              value === "learnings" ? (
-                <li className="list-none ml-5 rounded-[5px] bg-gradient-to-r from-blue-600 to-purple-600">
-                  <Link
-                    to={"/learnings"}
-                    className="no-underline text-white text-[17px] font-bold transition-all duration-300 ease-in-out px-[10px] py-[2px] block hover:text-yellow-400"
-                  >
-                    Learnings
-                    <FontAwesomeIcon icon={faChalkboardUser} className="ml-1" />
-                  </Link>
-                </li>
-              ) : (
-                <li className="list-none ml-5">
-                  <Link 
-                    to={"/learnings"}
-                    className="no-underline text-[rgb(21,21,100)] text-[17px] font-bold transition-all duration-300 ease-in-out hover:text-yellow-400"
-                  >
-                    Learnings
-                    <FontAwesomeIcon icon={faChalkboardUser} className="ml-1" />
-                  </Link>
-                </li>
-              )
-            ) : (
-              <></>
-            )}
-            {isAuthenticated ? (
-              <li className="list-none ml-5">
-                <button 
-                  onClick={handleLogOut} 
-                  className="w-[120px] h-[35px] p-[1px] mb-[1px] bg-[#0047ca] border-none rounded-lg text-[rgb(250,250,250)] text-[15px] font-medium cursor-pointer transition-all duration-300 ease-in-out hover:bg-[#002c5fe1]"
+              <div className="flex items-center gap-3">
+                {/* এডমিন হলে একটি ব্যাজ দেখাবে যাতে কনফিউশন না হয় */}
+                {user.role === "ROLE_ADMIN" && (
+                  <span className="text-[10px] bg-red-100 text-red-600 px-2 py-1 rounded font-bold border border-red-200">ADMIN</span>
+                )}
+                
+                <button
+                  onClick={handleLogOut}
+                  className="bg-red-500 hover:bg-red-600 text-white px-5 py-2 rounded-lg font-bold flex items-center gap-2 transition-all"
                 >
-                  Sign Out
+                  <FontAwesomeIcon icon={faSignOutAlt} /> Sign Out
                 </button>
-              </li>
+              </div>
             ) : (
-              <li className="list-none ml-5">
-                <button 
-                  onClick={() => navigate("/login")}
-                  className="w-[120px] h-[35px] p-[1px] mb-[1px] bg-[#0047ca] border-none rounded-lg text-[rgb(250,250,250)] text-[15px] font-medium cursor-pointer transition-all duration-300 ease-in-out hover:bg-[#002c5fe1]"
-                >
-                  Login/SignUp
-                </button>
-              </li>
+              <button
+                onClick={() => { navigate("/login"); closeMobileMenu(); }}
+                className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-bold shadow-md transition-all"
+              >
+                Login / Sign Up
+              </button>
             )}
-          </ul>
-        </div>
-      </nav>
-    </div>
+          </li>
+        </ul>
+      </div>
+    </nav>
   );
 }
 

@@ -48,6 +48,7 @@ const EditProfileModal = ({ visible, onCancel, userDetails, onUpdate }) => {
       
       if (success) {
         message.success('Profile updated successfully!');
+        form.resetFields();
         onCancel();
       } else {
         message.error('Failed to update profile. Please try again.');
@@ -80,7 +81,10 @@ const EditProfileModal = ({ visible, onCancel, userDetails, onUpdate }) => {
         </div>
       }
       open={visible}
-      onCancel={onCancel}
+      onCancel={() => {
+        form.resetFields();
+        onCancel();
+      }}
       footer={null}
       width={700}
       destroyOnClose
@@ -116,6 +120,7 @@ const EditProfileModal = ({ visible, onCancel, userDetails, onUpdate }) => {
               placeholder="Email cannot be changed"
               size="large"
               disabled
+              style={{ backgroundColor: '#f3f4f6', cursor: 'not-allowed' }}
             />
           </Form.Item>
         </div>
@@ -143,6 +148,7 @@ const EditProfileModal = ({ visible, onCancel, userDetails, onUpdate }) => {
               placeholder="Select date of birth"
               size="large"
               style={{ width: '100%' }}
+              format="YYYY-MM-DD"
               disabledDate={(current) => current && current > moment().endOf('day')}
             />
           </Form.Item>
@@ -158,9 +164,10 @@ const EditProfileModal = ({ visible, onCancel, userDetails, onUpdate }) => {
               size="large"
               allowClear
             >
-              <Option value="male">Male</Option>
-              <Option value="female">Female</Option>
-              <Option value="other">Other</Option>
+              <Option value="Male">Male</Option>
+              <Option value="Female">Female</Option>
+              <Option value="Other">Other</Option>
+              <Option value="Prefer not to say">Prefer not to say</Option>
             </Select>
           </Form.Item>
 
@@ -220,7 +227,10 @@ const EditProfileModal = ({ visible, onCancel, userDetails, onUpdate }) => {
 
         <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', marginTop: '24px' }}>
           <Button
-            onClick={onCancel}
+            onClick={() => {
+              form.resetFields();
+              onCancel();
+            }}
             size="large"
             style={{ minWidth: '100px' }}
           >

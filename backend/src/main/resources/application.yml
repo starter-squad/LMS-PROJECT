@@ -5,9 +5,9 @@ spring:
       max-request-size: 10MB
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: ${DB_URL:jdbc:mysql://localhost:3306/starter_squad?createDatabaseIfNotExist=true}
+    url: ${DB_URL:jdbc:mysql://localhost:3306/lms?createDatabaseIfNotExist=true}
     username: ${DB_USERNAME:root}
-    password: ${DB_PASSWORD:tarek0412}
+    password: ${DB_PASSWORD:12345678}
 
   jpa:
     generate-ddl: true
