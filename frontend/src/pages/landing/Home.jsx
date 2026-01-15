@@ -163,7 +163,7 @@ function Home() {
                   <span className="ml-2 text-gray-500">(239)</span>
                 </div>
                 <div className="text-primary font-bold">
-                  ₹{course.price.toFixed(2)}
+                  BDT {course.price.toFixed(2)}
                 </div>
               </div>
             </div>
