@@ -5,6 +5,7 @@ import Navbar from "../../Components/common/Navbar";
 import { authService } from "../../api/auth.service";
 import { Mail, Lock, LogIn } from "lucide-react";
 import { InputField } from "../../Components/common/InputFeild";
+import { message } from "antd";
 
 function Login() {
   const [email, setEmail] = useState("");
@@ -26,8 +27,20 @@ function Login() {
       if (result.success) {
         if (result.user) {
           setUser(result.user);
+          
+          // Role অনুযায়ী redirect করুন
+          if (result.user.role === "ROLE_ADMIN") {
+            message.success("Welcome Admin!");
+            navigate("/admin"); // Admin দের জন্য
+          } else if (result.user.role === "ROLE_USER") {
+            message.success("Login successful!");
+            navigate("/courses"); // Normal user দের জন্য
+          } else {
+            // Unknown role
+            message.success("Login successful!");
+            navigate("/"); 
+          }
         }
-        navigate("/courses");
       } else {
         setError(result.error || "Login failed. Please try again.");
       }
@@ -39,14 +52,13 @@ function Login() {
     }
   };
 
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
       <Navbar />
       <div className="flex items-center justify-center py-8 px-4 sm:px-6 lg:px-8">
         <div className="max-w-md w-full space-y-4">
           <div className="text-center">
-            <div className="mx-auto h-14 w-14 bg-gradient-primary rounded-full flex items-center justify-center mb-4 shadow-lg">
+            <div className="mx-auto h-14 w-14 bg-gradient-to-r from-blue-600 to-purple-600 rounded-full flex items-center justify-center mb-4 shadow-lg">
               <LogIn className="h-8 w-8 text-white" />
             </div>
             <h2 className="text-4xl font-bold text-gray-900 mb-2">Welcome Back!</h2>
@@ -89,7 +101,7 @@ function Login() {
               </div>
 
               {error && (
-                <div className="bg-red-50 border border-red-200 rounded-lg p-1">
+                <div className="bg-red-50 border border-red-200 rounded-lg p-3">
                   <p className="text-red-800 text-sm font-medium">{error}</p>
                 </div>
               )}
@@ -97,10 +109,11 @@ function Login() {
               <button
                 type="submit"
                 disabled={isLoading}
-                className={`w-full py-4 px-6 rounded-lg font-semibold text-lg transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 focus:outline-none focus:ring-4 focus:ring-blue-300 ${isLoading
-                  ? "bg-gray-400 text-gray-200 cursor-not-allowed"
-                  : "bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:from-blue-700 hover:to-purple-700"
-                  }`}
+                className={`w-full py-4 px-6 rounded-lg font-semibold text-lg transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 focus:outline-none focus:ring-4 focus:ring-blue-300 ${
+                  isLoading
+                    ? "bg-gray-400 text-gray-200 cursor-not-allowed"
+                    : "bg-gradient-to-r from-blue-600 to-purple-600 text-white hover:from-blue-700 hover:to-purple-700"
+                }`}
               >
                 {isLoading ? (
                   <div className="flex items-center justify-center">
@@ -159,9 +172,13 @@ function Login() {
           <div className="text-center">
             <p className="text-sm text-gray-500">
               By signing in, you agree to our{" "}
-              <a href="#" className="text-blue-600 hover:text-blue-700 transition-colors">Terms of Service</a>
+              <a href="/terms-and-conditions" className="text-blue-600 hover:text-blue-700 transition-colors">
+                Terms of Service
+              </a>
               {" "}and{" "}
-              <a href="#" className="text-blue-600 hover:text-blue-700 transition-colors">Privacy Policy</a>
+              <a href="/privacy-policy" className="text-blue-600 hover:text-blue-700 transition-colors">
+                Privacy Policy
+              </a>
             </p>
           </div>
         </div>

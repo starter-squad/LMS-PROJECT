@@ -49,16 +49,21 @@ public class ProgressService {
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User or course not found");
     }
 
-	public float getProgress(UUID userId, UUID courseId) {
-		User user = userRepository.findById(userId).orElse(null);
+    public float getProgress(UUID userId, UUID courseId) {
+        User user = userRepository.findById(userId).orElse(null);
         Course course = courseRepository.findById(courseId).orElse(null);
 
         if (user != null && course != null) {
-         Progress progress = progressRepository.findByUserAndCourse(user, course);
-         return progress.getPlayedTime();
+            Progress progress = progressRepository.findByUserAndCourse(user, course);
+
+            // এখানে চেক করতে হবে রেকর্ডটি আছে কি না
+            if (progress != null) {
+                return progress.getPlayedTime();
+            }
         }
-		return 0; 
-	}
+        // ইউজার বা কোর্স না থাকলে অথবা প্রগ্রেস রেকর্ড না থাকলে ০ রিটার্ন করবে
+        return 0;
+    }
 
 	public ResponseEntity<String> updateDuration(ProgressRequest request) {
         UUID userId = request.getUserId();
